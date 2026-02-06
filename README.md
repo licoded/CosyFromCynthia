@@ -10,6 +10,7 @@ Cynthia is a tool for SDD-based Forward LTLf Synthesis.
 ```
 git clone https://github.com/wannesm/PySDD.git
 cd PySDD/pysdd/lib/sdd-2.0
+git checkout v0.2.10
 sudo cp -P lib/Linux/* /usr/local/lib/
 sudo cp -Pr include/* /usr/local/include
 ```
