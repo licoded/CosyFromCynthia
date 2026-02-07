@@ -32,6 +32,25 @@ FLEX_TARGET(LTLfLexer ${CYNTHIA_PARSER_INCLUDE_PATH}/cynthia/parser/lexer.l ${CY
 BISON_TARGET(LTLfParser ${CYNTHIA_PARSER_INCLUDE_PATH}/cynthia/parser/parser.yy ${CYNTHIA_PARSER_INCLUDE_PATH}/cynthia/parser/parser.tab.cc )
 ADD_FLEX_BISON_DEPENDENCY(LTLfLexer LTLfParser)
 
+# Determine if lexer type fix is needed for macOS ARM64 compatibility
+# Flex 2.6.4 generates code with 'int' types, but FlexLexer.h on macOS ARM64 uses 'size_t'
+set(NEEDS_LEXER_TYPE_FIX FALSE)
+if(APPLE AND (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64"))
+    set(NEEDS_LEXER_TYPE_FIX TRUE)
+endif()
+
+# Create custom target to fix lexer.yy.cc types if needed
+if(NEEDS_LEXER_TYPE_FIX)
+    add_custom_target(fix_lexer_types ALL
+        COMMAND ${CMAKE_COMMAND}
+            -DLEXER_SOURCE_FILE=${FLEX_LTLfLexer_OUTPUTS}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/fix_lexer_types.cmake
+        DEPENDS ${FLEX_LTLfLexer_OUTPUTS}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Fixing lexer types for macOS ARM64 compatibility"
+    )
+endif()
+
 
 #set includes
 include_directories (${CYNTHIA_PARSER_INCLUDE_PATH} ${CYNTHIA_LOGIC_INCLUDE_PATH} ${CYNTHIA_UTILS_INCLUDE_PATH} ${THIRD_PARTY_INCLUDE_PATH})
@@ -51,6 +70,12 @@ add_library (${CYNTHIA_PARSER_LIB_NAME}
             ${CYNTHIA_PARSER_HEADER_FILES}
             ${BISON_LTLfParser_OUTPUTS}
             ${FLEX_LTLfLexer_OUTPUTS})
+
+# Add fix_lexer_types dependency only on macOS ARM64
+if(NEEDS_LEXER_TYPE_FIX)
+    add_dependencies(${CYNTHIA_PARSER_LIB_NAME} fix_lexer_types)
+endif()
+
 target_link_libraries(${CYNTHIA_PARSER_LIB_NAME}
         ${FLEX_LIBRARIES}
         ${BISON_LIBRARIES}
