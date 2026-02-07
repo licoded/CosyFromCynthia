@@ -17,7 +17,11 @@
 
 #include <algorithm>
 #include <cynthia/vtree.hpp>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
+#include <stdexcept>
+#include <unistd.h>
 #include <sstream>
 #include <stack>
 
@@ -69,12 +73,31 @@ Vtree* VTreeBuilder::get_vtree() {
 
   // save to a temporary file
   auto vtree_string = print_vtree(root);
-  std::string filename = std::tmpnam(nullptr);
-  std::ofstream temp_file;
-  temp_file.open(filename);
+
+  // Create temporary file using mkstemp (secure, avoids race conditions)
+  char temp_template[] = "/tmp/vtree_XXXXXX";
+  int fd = mkstemp(temp_template);
+  if (fd == -1) {
+    throw std::runtime_error("Failed to create temporary file for vtree");
+  }
+  std::string filename(temp_template);
+  close(fd); // Close the file descriptor
+
+  // Write to the file using ofstream
+  std::ofstream temp_file(filename);
+  if (!temp_file) {
+    std::remove(filename.c_str());
+    throw std::runtime_error("Failed to open temporary file for writing");
+  }
   temp_file << vtree_string;
   temp_file.close();
+
+  // Read using SDD library
   result = sdd_vtree_read(filename.c_str());
+
+  // Clean up temporary file
+  std::remove(filename.c_str());
+
   return result;
 }
 
