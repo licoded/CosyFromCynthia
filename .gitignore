@@ -244,3 +244,16 @@ libs/parser/include/cynthia/parser/*.tab.cc
 libs/parser/include/cynthia/parser/*.tab.hh
 
 .cache
+
+# Beads task tracking (ephemeral)
+.mcp.json
+
+# Tools virtual environments
+tools/.venv/
+
+# UV package manager
+.uv/
+uv.lock
+
+# git worktree folder
+.worktrees
