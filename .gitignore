@@ -242,3 +242,5 @@ libs/parser/include/cynthia/parser/*.yy.cc
 libs/parser/include/cynthia/parser/*.hh
 libs/parser/include/cynthia/parser/*.tab.cc
 libs/parser/include/cynthia/parser/*.tab.hh
+
+.cache
