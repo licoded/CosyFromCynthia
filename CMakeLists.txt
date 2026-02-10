@@ -48,6 +48,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 message("-- Using build type ${CMAKE_BUILD_TYPE}")
 
+# Static linking option
+option(BUILD_STATIC "Build statically linked executable" OFF)
+if(BUILD_STATIC)
+    message(STATUS "Building static executable (where supported)")
+    if(UNIX AND NOT APPLE)
+        # Linux: fully static linking
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    elseif(APPLE)
+        # macOS: static link user libraries only
+        message(STATUS "macOS: Will static link user libraries only (system libs remain dynamic)")
+    endif()
+endif()
 
 if ((ENABLE_COVERAGE) AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
     message("-- Code coverage enabled")
@@ -62,6 +74,16 @@ if (PROFILE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
 endif()
 
+# Platform-specific static linking flags
+if(BUILD_STATIC)
+    if(APPLE)
+        # macOS: Static link user libraries, dead strip unused code
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-dead_strip")
+    elseif(UNIX)
+        # Linux: Static link gcc/stdlibc++
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
+    endif()
+endif()
 
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(ROOT_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)

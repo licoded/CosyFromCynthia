@@ -76,10 +76,28 @@ if(NEEDS_LEXER_TYPE_FIX)
     add_dependencies(${CYNTHIA_PARSER_LIB_NAME} fix_lexer_types)
 endif()
 
-target_link_libraries(${CYNTHIA_PARSER_LIB_NAME}
-        ${FLEX_LIBRARIES}
-        ${BISON_LIBRARIES}
-        ${CYNTHIA_LOGIC_LIB_NAME})
+if(BUILD_STATIC AND UNIX)
+    # Statically link flex library
+    find_library(FL_STATIC_LIB libfl.a PATHS /opt/homebrew/lib /usr/local/lib /usr/lib)
+    if(FL_STATIC_LIB)
+        target_link_libraries(${CYNTHIA_PARSER_LIB_NAME}
+                ${FL_STATIC_LIB}
+                ${BISON_LIBRARIES}
+                ${CYNTHIA_LOGIC_LIB_NAME})
+        message(STATUS "Static linking flex library: ${FL_STATIC_LIB}")
+    else()
+        message(WARNING "BUILD_STATIC requested but static flex library not found. Will use dynamic.")
+        target_link_libraries(${CYNTHIA_PARSER_LIB_NAME}
+                ${FLEX_LIBRARIES}
+                ${BISON_LIBRARIES}
+                ${CYNTHIA_LOGIC_LIB_NAME})
+    endif()
+else()
+    target_link_libraries(${CYNTHIA_PARSER_LIB_NAME}
+            ${FLEX_LIBRARIES}
+            ${BISON_LIBRARIES}
+            ${CYNTHIA_LOGIC_LIB_NAME})
+endif()
 
 add_subdirectory(tests)
 

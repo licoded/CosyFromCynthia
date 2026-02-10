@@ -42,10 +42,29 @@ add_library (${CYNTHIA_LOGIC_LIB_NAME}
             ${CYNTHIA_LOGIC_SOURCE_FILES}
             ${CYNTHIA_LOGIC_HEADER_FILES}
         )
-target_link_libraries(${CYNTHIA_LOGIC_LIB_NAME}
-        ${CYNTHIA_UTILS_LIB_NAME}
-        ${FLEX_LIBRARIES}
-        ${BISON_LIBRARIES})
+
+if(BUILD_STATIC AND UNIX)
+    # Statically link flex library
+    find_library(FL_STATIC_LIB libfl.a PATHS /opt/homebrew/lib /usr/local/lib /usr/lib)
+    if(FL_STATIC_LIB)
+        target_link_libraries(${CYNTHIA_LOGIC_LIB_NAME}
+                ${CYNTHIA_UTILS_LIB_NAME}
+                ${FL_STATIC_LIB}
+                ${BISON_LIBRARIES})
+        message(STATUS "Static linking flex library for logic: ${FL_STATIC_LIB}")
+    else()
+        message(WARNING "BUILD_STATIC requested but static flex library not found. Will use dynamic.")
+        target_link_libraries(${CYNTHIA_LOGIC_LIB_NAME}
+                ${CYNTHIA_UTILS_LIB_NAME}
+                ${FLEX_LIBRARIES}
+                ${BISON_LIBRARIES})
+    endif()
+else()
+    target_link_libraries(${CYNTHIA_LOGIC_LIB_NAME}
+            ${CYNTHIA_UTILS_LIB_NAME}
+            ${FLEX_LIBRARIES}
+            ${BISON_LIBRARIES})
+endif()
 
 add_subdirectory(tests)
 

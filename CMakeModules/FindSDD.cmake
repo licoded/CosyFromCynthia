@@ -50,7 +50,11 @@ if(SDD_ROOT)
 endif()
 
 find_path(SDD_INCLUDE_DIRS NAMES sddapi.h HINTS ${SDD_INCLUDE_PATH})
-find_library(SDD_LIBRARIES NAMES libsdd.a libsdd.so HINTS ${SDD_LIBRARY_PATH})
+if(BUILD_STATIC)
+    find_library(SDD_LIBRARIES NAMES libsdd.a HINTS ${SDD_LIBRARY_PATH})
+else()
+    find_library(SDD_LIBRARIES NAMES libsdd.a libsdd.so HINTS ${SDD_LIBRARY_PATH})
+endif()
 
 include(FindPackageHandleStandardArgs)
 

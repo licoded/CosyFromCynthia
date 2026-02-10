@@ -191,6 +191,20 @@ cmake --build build --target cynthia-logic-test -j
 cmake --build build --target help | grep -o 'cynthia-.*-test' | xargs -I {} cmake --build build --target {}
 ```
 
+### Static Linking
+
+构建静态链接的可执行文件：
+
+```bash
+cmake -S . -B build -DBUILD_STATIC=ON
+cmake --build build --target cynthia-app -j
+./scripts/verify-static-linking.sh build/apps/cynthia/cynthia-app
+```
+
+**平台差异**：
+- macOS: 用户态库静态链接，系统库保持动态
+- Linux: 可实现完全静态链接
+
 ## Build Directory Policy
 
 - Mandate out-of-source builds: All build artifacts must be isolated in a dedicated directory (typically named `build/`)
